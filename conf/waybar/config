@@ -1,0 +1,31 @@
+{
+    "font": "JetBrains Mono Nerd Font 10",
+    "modules-left": ["hyprland/workspaces"],
+    "hyprland/workspaces": {
+    "on-scroll-up": "hyprctl dispatch workspace r-1",
+    "on-scroll-down": "hyprctl dispatch workspace r+1",
+    "on-click": "activate",
+    "active-only": false,
+    "all-outputs": true,
+    "format": "{}",
+    "format-icons": {
+      "urgent": "",
+      "active": "",
+      "default": ""
+    },
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
+    "modules-center": ["clock"],
+    "modules-right": ["battery", "pulseaudio"],
+    "battery": {
+        "format": " {}"
+    },
+    "pulseaudio": {
+      "format": " {}",
+      "format-muted": "🔇 0%"
+    },
+    "layer": "top",
+    "position": "top"
+}
