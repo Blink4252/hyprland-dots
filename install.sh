@@ -41,7 +41,7 @@ deb)
   ;;
 
 *)
-  echo "UNKNOWN DISTRO — TRY USING ARCH OR FEDORA."
+  echo "UNKNOWN DISTRO — TRY USING ARCH OR FEDORA. (dont worry those are the only ones supported)"
   exit 1
   ;;
 esac
