@@ -59,6 +59,7 @@ mkdir -p "$CONFIG_DIR"
 echo "Linking config files..."
 for dir in hypr waybar fuzzel nvim kitty; do
   mkdir "$CONFIG_DIR/$dir"
+  mkdir "$CONFIG_DIR/../old-dots
   mv "$CONFIG_DIR/$dir" "$CONFIG_DIR/../old-dots"
   cp -r "$REPO_CONF/$dir" "$CONFIG_DIR/$dir"
 done
