@@ -58,6 +58,7 @@ mkdir -p "$CONFIG_DIR"
 
 echo "Linking config files..."
 for dir in hypr waybar fuzzel nvim kitty; do
+  mkdir "$CONFIG_DIR/$dir"
   mv "$CONFIG_DIR/$dir" "$CONFIG_DIR/../old-dots"
   cp -r "$REPO_CONF/$dir" "$CONFIG_DIR/$dir"
 done
@@ -65,5 +66,5 @@ done
 echo "Cleaning up..."
 rm -rf "$TMPDIR"
 
-echo "Dotfiles linked!"
+echo "Dotfiles installed!"
 echo "Installation complete! You may now restart and launch Hyprland!"
