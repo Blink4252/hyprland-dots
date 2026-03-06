@@ -19,7 +19,7 @@ case "$DISTRO" in
   arch)
     echo "Detected Arch-based system."
     echo "Installing packages..."
-    sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim
+    sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
     ;;
   fedora)
     echo "Detected Fedora-based system."
@@ -28,7 +28,7 @@ case "$DISTRO" in
       sudo dnf copr enable solopasha/$repo -y
     done
     echo "Installing packages..."
-    sudo dnf install -y hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim
+    sudo dnf install -y hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
     ;;
   deb)
     echo "DISTRO NOT SUPPORTED. TRY USING ARCH OR FEDORA."
