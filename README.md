@@ -2,6 +2,9 @@
 My own hyprland dotfiles. WORK IN PROGRESS. Totally didn't use ai to make half of it.
 
 ## Installation
+### REQUIREMENTS
+git
+### actual installation
 run `bash <(curl -s https://raw.githubusercontent.com/Blink4252/hyprland-dots/main/install.sh)`
 
 ## Screenshots
