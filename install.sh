@@ -103,7 +103,10 @@ case "$DISTRO" in
     echo "Detected Arch-based system."
     warn_continue "ARCH IS NOT FULLY WORKING YET."
     echo "Installing packages..."
-    yes | sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel neovim git flatpak
+    yes | sudo pacman -S --needed \
+      hyprland hyprpaper hypridle hyprlock waybar fuzzel \
+      neovim git flatpak zsh starship eza zoxide \
+      ttf-jetbrains-mono-nerd
 
     # Terminal
     yes | sudo pacman -S --needed "$TERMINAL"
@@ -123,7 +126,10 @@ case "$DISTRO" in
       sudo dnf copr enable solopasha/$repo -y
     done
     echo "Installing packages..."
-    sudo dnf install -y hyprland hyprpaper hypridle hyprlock waybar fuzzel neovim git flatpak
+    sudo dnf install -y \
+      hyprland hyprpaper hypridle hyprlock waybar fuzzel \
+      neovim git flatpak zsh starship eza zoxide \
+      jetbrains-mono-fonts-all
 
     # Terminal
     sudo dnf install -y "$TERMINAL"
@@ -166,7 +172,7 @@ mkdir -p "$OLD_DOTS"
 
 echo "Backing up existing configs and installing dotfiles..."
 
-# Copy everything except terminal configs (handled separately)
+# Copy standard config folders
 for dir in fuzzel hypr nvim waybar; do
   if [ -d "$CONFIG_DIR/$dir" ]; then
     echo "  Backing up existing '$dir' to old-dots..."
@@ -181,22 +187,55 @@ if [ -d "$CONFIG_DIR/$TERMINAL" ]; then
   echo "  Backing up existing '$TERMINAL' config to old-dots..."
   mv "$CONFIG_DIR/$TERMINAL" "$OLD_DOTS/$TERMINAL"
 fi
-echo "  Copying terminal config..."
+echo "  Copying '$TERMINAL' config..."
 if [ -d "$REPO_CONF/$TERMINAL" ]; then
-  # TODO: use per-terminal config folders once they exist in the repo
   cp -r "$REPO_CONF/$TERMINAL" "$CONFIG_DIR/$TERMINAL"
 else
   echo "  (No separate config for $TERMINAL yet, using kitty config as fallback)"
   cp -r "$REPO_CONF/kitty" "$CONFIG_DIR/kitty"
 fi
 
+# ---------------------------------------------------
+# .zshrc
+# ---------------------------------------------------
+echo "  Writing .zshrc..."
+if [ -f "$HOME/.zshrc" ]; then
+  echo "  Backing up existing .zshrc to old-dots..."
+  cp "$HOME/.zshrc" "$OLD_DOTS/.zshrc"
+fi
+
+cat > "$HOME/.zshrc" << 'EOF'
+# ~/.zshrc
+
+# future me put some other useful stuff in here ok
+
+n() { if [ "$#" -eq 0 ]; then command nvim . ; else command nvim "$@"; fi; } # totally not stolen from omarchy
+alias ls="eza --icons"
+eval "$(zoxide init zsh --cmd cd)"
+
+eval "$(starship init zsh)"
+EOF
+
+# ---------------------------------------------------
+# Starship Catppuccin theme
+# ---------------------------------------------------
+echo "  Applying Starship Catppuccin Powerline theme..."
+starship preset catppuccin-powerline -o "$CONFIG_DIR/starship.toml"
+
+# ---------------------------------------------------
+# Set zsh as default shell
+# ---------------------------------------------------
+echo "  Setting zsh as default shell..."
+chsh -s "$(which zsh)"
+
 echo "Cleaning up..."
 rm -rf "$TMPDIR"
 
 echo ""
-echo "---------------------------------------------------------------"
+echo "---------------------------------------------------"
 echo "Dotfiles installed successfully!"
 echo "  Terminal: $TERMINAL"
 echo "  Browser:  $BROWSER"
+echo "  Shell:    zsh (log out and back in to take effect)"
 echo "Installation complete! You may now restart and launch Hyprland!"
-echo "---------------------------------------------------------------"
+echo "---------------------------------------------------"
