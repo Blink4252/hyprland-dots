@@ -220,8 +220,12 @@ EOF
 # ---------------------------------------------------
 # Starship Catppuccin theme
 # ---------------------------------------------------
-echo "  Applying Starship Catppuccin Powerline theme..."
-starship preset catppuccin-powerline -o "$CONFIG_DIR/starship.toml"
+echo "  Copying Starship Catppuccin Mocha theme..."
+if [ -f "$CONFIG_DIR/starship.toml" ]; then
+  echo "  Backing up existing starship.toml to old-dots..."
+  cp "$CONFIG_DIR/starship.toml" "$OLD_DOTS/starship.toml"
+fi
+cp "$REPO_CONF/starship/starship.toml" "$CONFIG_DIR/starship.toml"
 
 # ---------------------------------------------------
 # Set zsh as default shell
