@@ -4,7 +4,90 @@ echo "---------------------------------------------------"
 echo "Welcome to the Blink42 Hyprland Dotfiles Installer!"
 echo "---------------------------------------------------"
 
+# Arrow key menu function
+# Usage: arrow_menu "Question" "option1" "option2" ...
+# Returns selected index in $ARROW_SELECTED
+arrow_menu() {
+  local question="$1"
+  shift
+  local options=("$@")
+  local selected=0
+
+  print_menu() {
+    echo -ne "\r $question  "
+    for i in "${!options[@]}"; do
+      if [ "$i" -eq "$selected" ]; then
+        echo -ne " > ${options[$i]}  "
+      else
+        echo -ne "   ${options[$i]}  "
+      fi
+    done
+  }
+
+  print_menu
+  while true; do
+    read -rsn1 key
+    if [[ $key == $'\x1b' ]]; then
+      read -rsn2 key
+      case $key in
+        "[D") selected=$(( (selected - 1 + ${#options[@]}) % ${#options[@]} )); print_menu ;;
+        "[C") selected=$(( (selected + 1) % ${#options[@]} )); print_menu ;;
+      esac
+    elif [[ $key == "" ]]; then
+      echo ""
+      break
+    fi
+  done
+
+  ARROW_SELECTED=$selected
+}
+
+# Yes/No warning prompt
+# Usage: warn_continue "Warning message"
+# Exits on No
+warn_continue() {
+  local message="$1"
+  echo ""
+  echo "WARNING: $message"
+  echo ""
+  arrow_menu "Do you want to continue?" "(Y)es" "(N)o"
+  if [ "$ARROW_SELECTED" -eq 1 ]; then
+    echo "Exiting installer."
+    exit 0
+  fi
+}
+
+# ---------------------------------------------------
+# Terminal picker
+# ---------------------------------------------------
+echo ""
+echo "Which terminal emulator do you want?"
+arrow_menu "Terminal:" "Kitty (default)" "Ghostty" "Alacritty"
+case $ARROW_SELECTED in
+  1) TERMINAL="ghostty" ;;
+  2) TERMINAL="alacritty" ;;
+  *) TERMINAL="kitty" ;;
+esac
+echo "  Selected: $TERMINAL"
+
+# ---------------------------------------------------
+# Browser picker
+# ---------------------------------------------------
+echo ""
+echo "Which browser do you want?"
+arrow_menu "Browser:" "Firefox (default)" "Chromium" "Zen (Flatpak)" "Brave"
+case $ARROW_SELECTED in
+  1) BROWSER="chromium"; BROWSER_PKG="chromium"; USE_FLATPAK_BROWSER=false ;;
+  2) BROWSER="zen"; BROWSER_PKG="app.zen_browser.zen"; USE_FLATPAK_BROWSER=true ;;
+  3) BROWSER="brave"; BROWSER_PKG="brave-browser"; USE_FLATPAK_BROWSER=false ;;
+  *) BROWSER="firefox"; BROWSER_PKG="firefox"; USE_FLATPAK_BROWSER=false ;;
+esac
+echo "  Selected: $BROWSER"
+
+# ---------------------------------------------------
 # Detect distro family
+# ---------------------------------------------------
+echo ""
 if command -v pacman >/dev/null 2>&1; then
   DISTRO="arch"
 elif command -v dnf >/dev/null 2>&1; then
@@ -18,9 +101,21 @@ fi
 case "$DISTRO" in
   arch)
     echo "Detected Arch-based system."
+    warn_continue "ARCH IS NOT FULLY WORKING YET."
     echo "Installing packages..."
-    yes | sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
+    yes | sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel neovim git flatpak
+
+    # Terminal
+    yes | sudo pacman -S --needed "$TERMINAL"
+
+    # Browser
+    if [ "$USE_FLATPAK_BROWSER" = true ]; then
+      flatpak install flathub "$BROWSER_PKG" -y
+    else
+      yes | sudo pacman -S --needed "$BROWSER_PKG"
+    fi
     ;;
+
   fedora)
     echo "Detected Fedora-based system."
     echo "Adding Copr repos..."
@@ -28,8 +123,19 @@ case "$DISTRO" in
       sudo dnf copr enable solopasha/$repo -y
     done
     echo "Installing packages..."
-    sudo dnf install -y hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
+    sudo dnf install -y hyprland hyprpaper hypridle hyprlock waybar fuzzel neovim git flatpak
+
+    # Terminal
+    sudo dnf install -y "$TERMINAL"
+
+    # Browser
+    if [ "$USE_FLATPAK_BROWSER" = true ]; then
+      flatpak install flathub "$BROWSER_PKG" -y
+    else
+      sudo dnf install -y "$BROWSER_PKG"
+    fi
     ;;
+
   deb)
     echo "DISTRO NOT SUPPORTED. TRY USING ARCH OR FEDORA."
     exit 1
@@ -60,7 +166,8 @@ mkdir -p "$OLD_DOTS"
 
 echo "Backing up existing configs and installing dotfiles..."
 
-for dir in fuzzel hypr kitty nvim waybar; do
+# Copy everything except terminal configs (handled separately)
+for dir in fuzzel hypr nvim waybar; do
   if [ -d "$CONFIG_DIR/$dir" ]; then
     echo "  Backing up existing '$dir' to old-dots..."
     mv "$CONFIG_DIR/$dir" "$OLD_DOTS/$dir"
@@ -69,11 +176,27 @@ for dir in fuzzel hypr kitty nvim waybar; do
   cp -r "$REPO_CONF/$dir" "$CONFIG_DIR/$dir"
 done
 
+# Handle terminal config
+if [ -d "$CONFIG_DIR/$TERMINAL" ]; then
+  echo "  Backing up existing '$TERMINAL' config to old-dots..."
+  mv "$CONFIG_DIR/$TERMINAL" "$OLD_DOTS/$TERMINAL"
+fi
+echo "  Copying terminal config..."
+if [ -d "$REPO_CONF/$TERMINAL" ]; then
+  # TODO: use per-terminal config folders once they exist in the repo
+  cp -r "$REPO_CONF/$TERMINAL" "$CONFIG_DIR/$TERMINAL"
+else
+  echo "  (No separate config for $TERMINAL yet, using kitty config as fallback)"
+  cp -r "$REPO_CONF/kitty" "$CONFIG_DIR/kitty"
+fi
+
 echo "Cleaning up..."
 rm -rf "$TMPDIR"
 
 echo ""
-echo "---------------------------------------------------"
+echo "---------------------------------------------------------------"
 echo "Dotfiles installed successfully!"
+echo "  Terminal: $TERMINAL"
+echo "  Browser:  $BROWSER"
 echo "Installation complete! You may now restart and launch Hyprland!"
-echo "---------------------------------------------------"
+echo "---------------------------------------------------------------"
