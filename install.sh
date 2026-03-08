@@ -106,7 +106,7 @@ case "$DISTRO" in
     yes | sudo pacman -S --needed \
       hyprland hyprpaper hypridle hyprlock waybar fuzzel \
       neovim git flatpak zsh starship eza zoxide \
-      ttf-jetbrains-mono-nerd
+      ttf-jetbrains-mono-nerd fastfetch
 
     # Terminal
     yes | sudo pacman -S --needed "$TERMINAL"
@@ -129,7 +129,7 @@ case "$DISTRO" in
     sudo dnf install -y \
       hyprland hyprpaper hypridle hyprlock waybar fuzzel \
       neovim git flatpak zsh starship eza zoxide \
-      jetbrains-mono-fonts-all
+      jetbrains-mono-fonts-all fastfetch
 
     # Terminal
     sudo dnf install -y "$TERMINAL"
@@ -214,6 +214,7 @@ alias ls="eza --icons"
 eval "$(zoxide init zsh --cmd cd)"
 
 eval "$(starship init zsh)"
+fastfetch
 EOF
 
 # ---------------------------------------------------
