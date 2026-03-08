@@ -19,7 +19,7 @@ case "$DISTRO" in
   arch)
     echo "Detected Arch-based system."
     echo "Installing packages..."
-    sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
+    yes | sudo pacman -S --needed hyprland hyprpaper hypridle hyprlock waybar fuzzel kitty neovim git
     ;;
   fedora)
     echo "Detected Fedora-based system."
